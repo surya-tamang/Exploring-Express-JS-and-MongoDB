@@ -1,11 +1,51 @@
 const express = require("express");
+const mongoose = require("mongoose");
 const fs = require("fs");
-let users = require("./MOCK_DATA.json");
 const port = 8000;
 
 const app = express();
 
-// middle-ware
+// *******************Schema******************
+
+const userSchema = new mongoose.Schema(
+  {
+    first_name: {
+      type: String,
+      required: true,
+    },
+    last_name: {
+      type: String,
+    },
+    email: {
+      type: String,
+      required: true,
+      unique: true,
+    },
+    gender: {
+      type: String,
+      required: true,
+    },
+    job_title: {
+      type: String,
+    },
+  },
+  { timestamps: true }
+);
+
+// ******************* Connecting to mongoDB ******************
+
+try {
+  mongoose.connect("mongodb://127.0.0.1:27017/learning");
+  console.log("MongoDB connected");
+} catch (err) {
+  console.log("Error: ", err);
+}
+
+// ******************* Model ******************
+
+const user = mongoose.model("user", userSchema);
+
+// ****************** middle-ware ******************
 
 app.use(express.urlencoded({ extended: false }));
 
@@ -16,66 +56,83 @@ app.use((req, res, next) => {
   });
 });
 
-// Routes
+//****************** Routes ******************
 
-app.get("/users", (req, res) => {
+app.get("/users", async (req, res) => {
+  const users = await user.find({});
   const html = `
-     <ul>
-     ${users.map((user) => `<li>${user.first_name}</li>`).join("")}
-     </ul>`;
+   <table border="1" cellpadding="2" cellspacing="3">
+    <tr>
+    <th>First name </th>
+    <th>last name </th>
+    <th>email </th>
+    <th>gender </th>
+    </tr>
+    <tr>
+     ${users
+       .map(
+         (user) => ` <tr>
+                           <td>${user.first_name}</td>  
+                           <td>${user.last_name}</td>  
+                           <td>${user.email}</td>  
+                           <td>${user.gender}</td>  
+                  </tr>`
+       )
+       .join("")}
+  
+     </table>`;
   res.send(html);
 });
 
-// rest api
+//****************** rest api ******************
 
-app.get("/api/users", (req, res) => {
+app.get("/api/users", async (req, res) => {
+  const users = await user.find({});
+
   return res.json(users);
 });
 
 app
   .route("/api/user/:id")
-  .get((req, res) => {
-    const id = Number(req.params.id);
-    const user = users.find((user) => user.id === id);
-    return res.json(user);
+  .get(async (req, res) => {
+    const particularUser = await user.findById(req.params.id);
+    return res.json(particularUser);
   })
-  .patch((req, res) => {
-    const id = Number(req.params.id);
-    let body = req.body;
+  .patch(async (req, res) => {
+    const body = req.body;
+    await user.findByIdAndUpdate(req.params.id, { first_name: "Ragnar" });
 
-    const userIndex = users.findIndex((user) => user.id == id);
-    let updatedUser = { ...body, id: id };
-
-    if (userIndex === -1) {
-      return res
-        .status(404)
-        .json({ status: "error", message: "User not found" });
-    }
-
-    users[userIndex] = { ...userIndex[userIndex], ...updatedUser };
-    fs.writeFile("./MOCK_DATA.json", JSON.stringify(users), (err, data) => {
-      if (err) {
-        return res
-          .status(500)
-          .json({ status: "error", message: "Failed to update user" });
-      }
-      return res.json({ status: "success", updated_id: id });
-    });
+    return res.status(201).json({ msg: "success" });
   })
-  .delete((req, res) => {
-    const id = Number(req.params.id);
-    users = users.filter((user) => user.id !== id);
-    fs.writeFile("./MOCK_DATA.json", JSON.stringify(users), (err, data) => {
-      return res.json({ status: "success", id: users.length });
-    });
+  .delete(async (req, res) => {
+    await user.findByIdAndDelete(req.params.id);
+    return res.status(201), json({ status: "success" });
   });
 
-app.post("/api/users", (req, res) => {
+app.post("/api/users", async (req, res) => {
   const body = req.body;
-  users.push({ ...body, id: users.length + 1 });
-  console.log(body);
-  fs.writeFile("./MOCK_DATA.json", JSON.stringify(users), (err, data) => {
-    return res.json({ status: "success", id: users.length });
+  if (
+    !body ||
+    !body.first_name ||
+    !body.last_name ||
+    !body.gender ||
+    !body.email ||
+    !body.job_title
+  ) {
+    return res.status(400).json({ msg: "All fields required" });
+  }
+
+  const result = await user.create({
+    first_name: body.first_name,
+    last_name: body.last_name,
+    email: body.email,
+    gender: body.gender,
+    job_title: body.job_title,
+  });
+  console.log("result : ", result);
+
+  return res.status(201).json({
+    msg: "Success",
   });
 });
 
