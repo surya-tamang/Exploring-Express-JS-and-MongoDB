@@ -7,12 +7,13 @@ const handleGetAllUsers = async (req, res) => {
 };
 
 const handleGetUserById = async (req, res) => {
-  const particularUser = await user.findById(req.params.id);
+  const { id } = req.params;
+  const particularUser = await user.findById(id);
   return res.json(particularUser);
 };
 
 const handleUpdateUserById = async (req, res) => {
-  const body = req.body;
+  // const body = req.body;
   await user.findByIdAndUpdate(req.params.id, { first_name: "Ragnar" });
 
   return res.status(201).json({ msg: "success" });
