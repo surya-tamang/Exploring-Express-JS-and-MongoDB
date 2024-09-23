@@ -13,31 +13,52 @@ const handleGetUserById = async (req, res) => {
   return res.json(particularUser);
 };
 
+// handle login
+
 const handleLogin = async (req, res) => {
   const { email, password } = req.body;
 
   const existingUser = await user.findOne({ email });
-  if (!existingUser) {
-    res.json({ msg: "User doesn't exist!!" });
-  }
+  if (existingUser) {
+    if (password !== existingUser.password) {
+      res.json({ msg: "Incorrect email or password" });
+    } else {
+      // generate access token
+      const accessToken = jwt.sign(
+        {
+          id: existingUser.id,
+          first_name: existingUser.first_name,
+          last_name: existingUser.last_name,
+          email: existingUser.email,
+        },
+        "mySeCretKey"
+      );
 
-  if (password !== existingUser.password) {
-    res.json({ msg: "Incorrect email or password" });
+      res.status(201).json({
+        msg: "Login success",
+        accessToken,
+      });
+    }
   } else {
-    res.json({ msg: "Login success" });
+    res.status(401).json({ msg: "User doesn't exist!!" });
   }
 };
 
 const handleUpdateUserById = async (req, res) => {
   // const body = req.body;
-  await user.findByIdAndUpdate(req.params.id, { first_name: "Ragnar" });
+  await user.findByIdAndUpdate(req.params.id, req.body);
 
   return res.status(201).json({ msg: "success" });
 };
 
 const handleDeleteUserById = async (req, res) => {
-  await user.findByIdAndDelete(req.params.id);
-  return res.status(201), json({ status: "success" });
+  if (req.user.id === req.params.id) {
+    res.status(200).json("User has been deleted");
+  } else {
+    res.status(403).json("You can't delete this");
+  }
+  // await user.findByIdAndDelete(req.params.id);
+  // return res.status(201), json({ status: "success" });
 };
 
 const handleAddUser = async (req, res) => {

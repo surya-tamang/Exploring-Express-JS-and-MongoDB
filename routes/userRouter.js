@@ -10,6 +10,8 @@ const {
   handleLogin,
 } = require("../controller/controller");
 
+const { verify } = require("../middlewares");
+
 //******************** Get or add users ******************* */
 
 router.route("/").get(handleGetAllUsers).post(handleAddUser);
@@ -22,6 +24,6 @@ router
   .route("/:id")
   .get(handleGetUserById)
   .patch(handleUpdateUserById)
-  .delete(handleDeleteUserById);
+  .delete(verify, handleDeleteUserById);
 
 module.exports = router;
