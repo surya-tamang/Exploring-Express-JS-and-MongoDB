@@ -1,4 +1,5 @@
 const user = require("../model/user");
+const jwt = require("jsonwebtoken");
 
 const handleGetAllUsers = async (req, res) => {
   const users = await user.find({});
@@ -10,6 +11,21 @@ const handleGetUserById = async (req, res) => {
   const { id } = req.params;
   const particularUser = await user.findById(id);
   return res.json(particularUser);
+};
+
+const handleLogin = async (req, res) => {
+  const { email, password } = req.body;
+
+  const existingUser = await user.findOne({ email });
+  if (!existingUser) {
+    res.json({ msg: "User doesn't exist!!" });
+  }
+
+  if (password !== existingUser.password) {
+    res.json({ msg: "Incorrect email or password" });
+  } else {
+    res.json({ msg: "Login success" });
+  }
 };
 
 const handleUpdateUserById = async (req, res) => {
@@ -25,31 +41,40 @@ const handleDeleteUserById = async (req, res) => {
 };
 
 const handleAddUser = async (req, res) => {
-  const body = req.body;
-  if (
-    !body ||
-    !body.first_name ||
-    !body.last_name ||
-    !body.gender ||
-    !body.email ||
-    !body.job_title
-  ) {
-    return res.status(400).json({ msg: "All fields required" });
+  try {
+    const { first_name, last_name, email, password } = req.body;
+
+    // Validate required fields
+    if (!first_name || !last_name || !email || !password) {
+      console.log("Validation failed: Missing fields");
+      return res.status(400).json({ msg: "All fields are required" });
+    }
+
+    // Check if the user already exists
+    const existingUser = await user.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({ msg: "User already exists" });
+    }
+
+    // Hash the password
+    // const salt = await bcrypt.genSalt(10);
+    // const hashedPassword = await bcrypt.hash(password, salt);
+
+    // Create a new user
+    const newUser = new user({
+      first_name,
+      last_name,
+      email,
+      password,
+    });
+
+    await newUser.save();
+
+    return res.status(201).json({ msg: "User registered successfully" });
+  } catch (error) {
+    console.error("Error in registerUser:", error);
+    return res.status(500).json({ msg: "Server error" });
   }
-
-  const result = await user.create({
-    first_name: body.first_name,
-    last_name: body.last_name,
-    email: body.email,
-    gender: body.gender,
-    job_title: body.job_title,
-  });
-  console.log("result : ", result);
-
-  return res.status(201).json({
-    msg: "Success",
-    newID: result.id,
-  });
 };
 
 module.exports = {
@@ -58,4 +83,5 @@ module.exports = {
   handleGetUserById,
   handleUpdateUserById,
   handleDeleteUserById,
+  handleLogin,
 };

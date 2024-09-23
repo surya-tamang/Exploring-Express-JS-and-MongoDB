@@ -14,6 +14,7 @@ connectDB("mongodb://127.0.0.1:27017/learning");
 // ****************** middle-ware ******************
 
 app.use(express.urlencoded({ extended: false }));
+app.use(express.json());
 app.use(logReqRes("log.txt"));
 
 //****************** Routes ******************

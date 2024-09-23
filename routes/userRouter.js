@@ -7,11 +7,14 @@ const {
   handleGetAllUsers,
   handleGetUserById,
   handleUpdateUserById,
+  handleLogin,
 } = require("../controller/controller");
 
 //******************** Get or add users ******************* */
 
 router.route("/").get(handleGetAllUsers).post(handleAddUser);
+
+router.route("/login").post(handleLogin);
 
 //******************** Get, update and delete by ID ******************* */
 
