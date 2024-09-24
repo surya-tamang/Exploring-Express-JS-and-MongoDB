@@ -1,4 +1,5 @@
 const express = require("express");
+const cors = require("cors");
 const userRouter = require("./routes/userRouter");
 const { connectDB } = require("./connection/connectDB");
 const { logReqRes } = require("./middlewares");
@@ -13,6 +14,7 @@ connectDB("mongodb://127.0.0.1:27017/learning");
 
 // ****************** middle-ware ******************
 
+app.use(cors());
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 app.use(logReqRes("log.txt"));

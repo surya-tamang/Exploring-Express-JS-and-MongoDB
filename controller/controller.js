@@ -21,7 +21,7 @@ const handleLogin = async (req, res) => {
   const existingUser = await user.findOne({ email });
   if (existingUser) {
     if (password !== existingUser.password) {
-      res.json({ msg: "Incorrect email or password" });
+      res.status(400).json({ msg: "Incorrect email or password" });
     } else {
       // generate access token
       const accessToken = jwt.sign(
@@ -36,7 +36,7 @@ const handleLogin = async (req, res) => {
 
       res.status(201).json({
         msg: "Login success",
-        accessToken,
+        accessToken: accessToken,
       });
     }
   } else {
