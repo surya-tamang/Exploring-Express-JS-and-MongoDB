@@ -28,8 +28,10 @@ const Login = () => {
       // return response;
       // console.log(response.data);
       const token = response.data.accessToken;
+      const refresh = response.data.refreshToken;
       if (token) {
-        localStorage.setItem("token", token);
+        localStorage.setItem("accessToken", token);
+        localStorage.setItem("refreshToken", token);
         navigate("/home");
       }
     } catch (err) {

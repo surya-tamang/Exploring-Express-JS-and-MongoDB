@@ -5,15 +5,17 @@ import { useNavigate } from "react-router-dom";
 const Home = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState("");
-  const token = localStorage.getItem("token");
+  const accessToken = localStorage.getItem("accessToken");
   useEffect(() => {
-    if (token) {
-      const data = jwtDecode(token);
+    if (accessToken) {
+      const data = jwtDecode(accessToken);
       setUser(data.first_name);
     }
   }, []);
 
   const handleLogout = () => {
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("refreshToken");
     navigate("/");
   };
   return (

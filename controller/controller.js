@@ -31,12 +31,28 @@ const handleLogin = async (req, res) => {
           last_name: existingUser.last_name,
           email: existingUser.email,
         },
-        "mySeCretKey"
+        "mySeCretKey",
+        {
+          expiresIn: "1m",
+        }
+      );
+      const refreshToken = jwt.sign(
+        {
+          id: existingUser.id,
+          first_name: existingUser.first_name,
+          last_name: existingUser.last_name,
+          email: existingUser.email,
+        },
+        "mySeCretKey",
+        {
+          expiresIn: "7d",
+        }
       );
 
       res.status(201).json({
         msg: "Login success",
         accessToken: accessToken,
+        refreshToken: refreshToken,
       });
     }
   } else {
