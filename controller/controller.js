@@ -13,8 +13,6 @@ const handleGetUserById = async (req, res) => {
   return res.json(particularUser);
 };
 
-// handle login
-
 const handleLogin = async (req, res) => {
   const { email, password } = req.body;
 
@@ -114,6 +112,19 @@ const handleAddUser = async (req, res) => {
   }
 };
 
+const handleUploadById = async (req, res) => {
+  const { img } = req.body;
+  const { id } = req.params;
+
+  try {
+    await user.findByIdAndUpdate(id, { profile: img }, { new: true });
+
+    res.status(201).json({ msg: "Uploaded successfully" });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ msg: "Server error" });
+  }
+};
 module.exports = {
   handleAddUser,
   handleGetAllUsers,
@@ -121,4 +132,5 @@ module.exports = {
   handleUpdateUserById,
   handleDeleteUserById,
   handleLogin,
+  handleUploadById,
 };
