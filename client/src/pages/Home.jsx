@@ -6,22 +6,23 @@ import axios from "axios";
 const Home = () => {
   const navigate = useNavigate();
   const [profileImg, setProfileImg] = useState("");
-  const [user, setUser] = useState("");
+  const [user, setUser] = useState({});
   const accessToken = localStorage.getItem("accessToken");
-  const [userId, setUserId] = useState("");
   useEffect(() => {
     if (accessToken) {
       const data = jwtDecode(accessToken);
-      setUser(data.first_name);
-      setUserId(data.id);
+      setUser(data);
+      console.log(data);
     }
-  }, []);
-  const url = `http://localhost:8000/user/upload/${userId}`;
+  }, [accessToken]);
+  const url = `http://localhost:8000/user/upload/${user.id}`;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log(profileImg.length);
+
     try {
-      const response = await axios.post(url, profileImg);
+      const response = await axios.post(url, { img: profileImg });
       console.log(response);
     } catch (err) {
       console.log(err);
@@ -41,7 +42,7 @@ const Home = () => {
   };
   return (
     <div>
-      <h1>Hello {user}</h1>
+      <h1>Hello {user.first_name}</h1>
       <button
         onClick={handleLogout}
         className="absolute top-3 right-4 p-2 bg-slate-800 text-white rounded-md"
@@ -49,7 +50,7 @@ const Home = () => {
         Log out
       </button>
       <div className="bg-slate-300 w-20 h-20 rounded-full mt-10 ml-10 overflow-hidden border-2 border-slate-500">
-        <img src={profileImg} alt="" className="w-full h-full" />
+        <img src={user.profile} alt="" className="w-full h-full" />
       </div>
 
       <form onSubmit={handleSubmit} className="mt-20 flex flex-col">

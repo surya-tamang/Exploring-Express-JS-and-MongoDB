@@ -25,19 +25,31 @@ const Login = () => {
         "http://localhost:8000/user/login",
         userData
       );
-      // return response;
-      // console.log(response.data);
-      const token = response.data.accessToken;
-      const refresh = response.data.refreshToken;
-      if (token) {
-        localStorage.setItem("accessToken", token);
-        localStorage.setItem("refreshToken", token);
-        navigate("/home");
+
+      // Check if the response contains tokens
+      if (response && response.data) {
+        const token = response.data.accessToken;
+        const refresh = response.data.refreshToken;
+
+        if (token && refresh) {
+          localStorage.setItem("accessToken", token);
+          localStorage.setItem("refreshToken", refresh);
+          navigate("/home");
+        } else {
+          setError("Invalid login response, no tokens found.");
+        }
+      } else {
+        setError("Invalid response from server.");
       }
     } catch (err) {
-      setError(err.response.data.msg);
+      if (err.response && err.response.data) {
+        setError(err.response.data.msg);
+      } else {
+        setError("Login failed. Please try again.");
+      }
     }
   };
+
   return (
     <div className="w-full h-screen flex items-center justify-center bg-slate-300">
       <form

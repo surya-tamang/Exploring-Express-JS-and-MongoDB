@@ -21,17 +21,17 @@ const handleLogin = async (req, res) => {
     if (password !== existingUser.password) {
       res.status(400).json({ msg: "Incorrect email or password" });
     } else {
-      // generate access token
       const accessToken = jwt.sign(
         {
           id: existingUser.id,
           first_name: existingUser.first_name,
           last_name: existingUser.last_name,
           email: existingUser.email,
+          profile: existingUser.profile,
         },
         "mySeCretKey",
         {
-          expiresIn: "1m",
+          expiresIn: "15m",
         }
       );
       const refreshToken = jwt.sign(
@@ -40,6 +40,7 @@ const handleLogin = async (req, res) => {
           first_name: existingUser.first_name,
           last_name: existingUser.last_name,
           email: existingUser.email,
+          profile: existingUser.profile,
         },
         "mySeCretKey",
         {
@@ -116,15 +117,26 @@ const handleUploadById = async (req, res) => {
   const { img } = req.body;
   const { id } = req.params;
 
+  if (!img) {
+    return res.status(400).json({ msg: "Image is missing" });
+  }
   try {
-    await user.findByIdAndUpdate(id, { profile: img }, { new: true });
+    const updateUser = await user.findByIdAndUpdate(
+      id,
+      { profile: img },
+      { new: true }
+    );
 
-    res.status(201).json({ msg: "Uploaded successfully" });
+    res.status(201).json({
+      msg: "Uploaded successfully",
+      profile: updateUser.profile.length,
+    });
   } catch (err) {
-    console.log(err);
+    console.error(err);
     res.status(500).json({ msg: "Server error" });
   }
 };
+
 module.exports = {
   handleAddUser,
   handleGetAllUsers,
