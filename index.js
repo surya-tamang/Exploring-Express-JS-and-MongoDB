@@ -23,6 +23,6 @@ app.use(logReqRes("log.txt"));
 //****************** Routes ******************
 
 app.use("/user", userRouter);
-app.post("/user/upload/:id", handleUploadById);
+app.patch("/user/upload/:id", handleUploadById);
 
 app.listen(port, () => console.log(`Server started on port ${port}`));

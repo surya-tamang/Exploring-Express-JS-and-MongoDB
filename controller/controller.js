@@ -9,8 +9,15 @@ const handleGetAllUsers = async (req, res) => {
 
 const handleGetUserById = async (req, res) => {
   const { id } = req.params;
-  const particularUser = await user.findById(id);
-  return res.json(particularUser);
+  try {
+    const particularUser = await user.findById(id);
+    return res.json({
+      user: particularUser,
+    });
+  } catch (err) {
+    res.status(400).json({ msg: "Server Error" });
+    console.log(err);
+  }
 };
 
 const handleLogin = async (req, res) => {
@@ -24,10 +31,8 @@ const handleLogin = async (req, res) => {
       const accessToken = jwt.sign(
         {
           id: existingUser.id,
-          first_name: existingUser.first_name,
-          last_name: existingUser.last_name,
           email: existingUser.email,
-          profile: existingUser.profile,
+          password: existingUser.password,
         },
         "mySeCretKey",
         {
@@ -37,10 +42,8 @@ const handleLogin = async (req, res) => {
       const refreshToken = jwt.sign(
         {
           id: existingUser.id,
-          first_name: existingUser.first_name,
-          last_name: existingUser.last_name,
           email: existingUser.email,
-          profile: existingUser.profile,
+          password: existingUser.password,
         },
         "mySeCretKey",
         {
