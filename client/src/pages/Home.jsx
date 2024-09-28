@@ -2,27 +2,31 @@ import React, { useEffect, useState } from "react";
 import { jwtDecode } from "jwt-decode";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import getUser from "../user";
 
 const Home = () => {
   const navigate = useNavigate();
   const [profileImg, setProfileImg] = useState("");
   const [user, setUser] = useState({});
-  const accessToken = localStorage.getItem("accessToken");
   useEffect(() => {
-    if (accessToken) {
-      const data = jwtDecode(accessToken);
-      setUser(data);
-      console.log(data);
-    }
-  }, [accessToken]);
-  const url = `http://localhost:8000/user/upload/${user.id}`;
+    const token = localStorage.getItem("accessToken");
+    const decoded = jwtDecode(token);
+    const url = `http://localhost:8000/user/${decoded.id}`;
+
+    const getUser = async (url) => {
+      const response = await axios.get(url);
+      const loggedUser = await response.data.user;
+      setUser(loggedUser);
+    };
+    getUser(url);
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     console.log(profileImg.length);
 
     try {
-      const response = await axios.post(url, { img: profileImg });
+      const response = await axios.patch(url, { img: profileImg });
       console.log(response);
     } catch (err) {
       console.log(err);
@@ -50,7 +54,7 @@ const Home = () => {
         Log out
       </button>
       <div className="bg-slate-300 w-20 h-20 rounded-full mt-10 ml-10 overflow-hidden border-2 border-slate-500">
-        <img src={user.profile} alt="" className="w-full h-full" />
+        <img src={user.profile} alt="" className="w-full h-full object-cover" />
       </div>
 
       <form onSubmit={handleSubmit} className="mt-20 flex flex-col">
